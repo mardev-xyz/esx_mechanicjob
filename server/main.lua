@@ -25,16 +25,14 @@ local function Harvest(source)
 	end)
 end
 
-RegisterServerEvent('esx_mechanicjob:startHarvest')
-AddEventHandler('esx_mechanicjob:startHarvest', function()
+RegisterNetEvent('esx_mechanicjob:startHarvest', function()
 	local source = source
 	PlayersHarvesting[source] = true
 	TriggerClientEvent('esx:showNotification', source, TranslateCap('recovery_gas_can'))
 	Harvest(source)
 end)
 
-RegisterServerEvent('esx_mechanicjob:stopHarvest')
-AddEventHandler('esx_mechanicjob:stopHarvest', function()
+RegisterNetEvent('esx_mechanicjob:stopHarvest', function()
 	local source = source
 	PlayersHarvesting[source] = false
 end)
@@ -57,16 +55,14 @@ local function Harvest2(source)
 	end)
 end
 
-RegisterServerEvent('esx_mechanicjob:startHarvest2')
-AddEventHandler('esx_mechanicjob:startHarvest2', function()
+RegisterNetEvent('esx_mechanicjob:startHarvest2', function()
 	local source = source
 	PlayersHarvesting2[source] = true
 	TriggerClientEvent('esx:showNotification', source, TranslateCap('recovery_repair_tools'))
 	Harvest2(source)
 end)
 
-RegisterServerEvent('esx_mechanicjob:stopHarvest2')
-AddEventHandler('esx_mechanicjob:stopHarvest2', function()
+RegisterNetEvent('esx_mechanicjob:stopHarvest2', function()
 	local source = source
 	PlayersHarvesting2[source] = false
 end)
@@ -88,16 +84,14 @@ local function Harvest3(source)
 	end)
 end
 
-RegisterServerEvent('esx_mechanicjob:startHarvest3')
-AddEventHandler('esx_mechanicjob:startHarvest3', function()
+RegisterNetEvent('esx_mechanicjob:startHarvest3', function()
 	local source = source
 	PlayersHarvesting3[source] = true
 	TriggerClientEvent('esx:showNotification', source, TranslateCap('recovery_body_tools'))
 	Harvest3(source)
 end)
 
-RegisterServerEvent('esx_mechanicjob:stopHarvest3')
-AddEventHandler('esx_mechanicjob:stopHarvest3', function()
+RegisterNetEvent('esx_mechanicjob:stopHarvest3', function()
 	local source = source
 	PlayersHarvesting3[source] = false
 end)
@@ -121,8 +115,7 @@ local function Craft(source)
 	end)
 end
 
-RegisterServerEvent('esx_mechanicjob:startCraft')
-AddEventHandler('esx_mechanicjob:startCraft', function()
+RegisterNetEvent('esx_mechanicjob:startCraft', function()
 	local source = source
 	PlayersCrafting[source] = true
 	TriggerClientEvent('esx:showNotification', source, TranslateCap('assembling_blowtorch'))
@@ -157,6 +150,13 @@ end
 RegisterServerEvent('esx_mechanicjob:startCraft2')
 AddEventHandler('esx_mechanicjob:startCraft2', function()
 	local source = source
+	local xPlayer = ESX.GetPlayerFromId(source)
+
+	if not xPlayer.job.name == 'mechanic' then
+		print(('[^3WARNING^7] Player ^1%s^7 is cheating (tried to trigger `esx_mechanicjob:startCraft2`)'):format(source))
+		return
+	end
+
 	PlayersCrafting2[source] = true
 	TriggerClientEvent('esx:showNotification', source, TranslateCap('assembling_repair_kit'))
 	Craft2(source)
@@ -187,9 +187,15 @@ local function Craft3(source)
 	end)
 end
 
-RegisterServerEvent('esx_mechanicjob:startCraft3')
-AddEventHandler('esx_mechanicjob:startCraft3', function()
+RegisterNetEvent('esx_mechanicjob:startCraft3', function()
 	local source = source
+	local xPlayer = ESX.GetPlayerFromId(source)
+
+	if not xPlayer.job.name == 'mechanic' then
+		print(('[^3WARNING^7] Player ^1%s^7 is cheating (tried to trigger `esx_mechanicjob:startCraft3`)'):format(source))
+		return
+	end
+	
 	PlayersCrafting3[source] = true
 	TriggerClientEvent('esx:showNotification', source, TranslateCap('assembling_body_kit'))
 	Craft3(source)
@@ -201,11 +207,15 @@ AddEventHandler('esx_mechanicjob:stopCraft3', function()
 	PlayersCrafting3[source] = false
 end)
 
-RegisterServerEvent('esx_mechanicjob:onNPCJobMissionCompleted')
-AddEventHandler('esx_mechanicjob:onNPCJobMissionCompleted', function()
+RegisterNetEvent('esx_mechanicjob:onNPCJobMissionCompleted', function()
 	local source = source
 	local xPlayer = ESX.GetPlayerFromId(source)
 	local total   = math.random(Config.NPCJobEarnings.min, Config.NPCJobEarnings.max);
+
+	if not xPlayer.job.name == 'mechanic' then
+		print(('[^3WARNING^7] Player ^1%s^7 is cheating (tried to trigger `esx_mechanicjob:onNPCJobMissionCompleted`)'):format(source))
+		return
+	end
 
 	if xPlayer.job.grade >= 3 then
 		total = total * 2
@@ -248,9 +258,13 @@ ESX.RegisterUsableItem('carokit', function(source)
 	TriggerClientEvent('esx:showNotification', source, TranslateCap('you_used_body_kit'))
 end)
 
-RegisterServerEvent('esx_mechanicjob:getStockItem')
-AddEventHandler('esx_mechanicjob:getStockItem', function(itemName, count)
+RegisterNetEvent('esx_mechanicjob:getStockItem', function(itemName, count)
 	local xPlayer = ESX.GetPlayerFromId(source)
+	
+	if not xPlayer.job.name == 'mechanic' then
+		print(('[^3WARNING^7] Player ^1%s^7 is cheating (tried to trigger `esx_mechanicjob:getStockItem`)'):format(source))
+		return
+	end
 
 	TriggerEvent('esx_addoninventory:getSharedInventory', 'society_mechanic', function(inventory)
 		local item = inventory.getItem(itemName)
@@ -278,9 +292,13 @@ ESX.RegisterServerCallback('esx_mechanicjob:getStockItems', function(source, cb)
 	end)
 end)
 
-RegisterServerEvent('esx_mechanicjob:putStockItems')
-AddEventHandler('esx_mechanicjob:putStockItems', function(itemName, count)
+RegisterNetEvent('esx_mechanicjob:putStockItems', function(itemName, count)
 	local xPlayer = ESX.GetPlayerFromId(source)
+
+	if not xPlayer.job.name == 'mechanic' then
+		print(('[^3WARNING^7] Player ^1%s^7 is cheating (tried to trigger `esx_mechanicjob:putStockItems`)'):format(source))
+		return
+	end
 
 	TriggerEvent('esx_addoninventory:getSharedInventory', 'society_mechanic', function(inventory)
 		local item = inventory.getItem(itemName)
