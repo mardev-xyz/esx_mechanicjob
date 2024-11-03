@@ -16,10 +16,11 @@ local function Harvest(source)
 
 			if GazBottleQuantity >= 5 then
 				TriggerClientEvent('esx:showNotification', source, TranslateCap('you_do_not_room'))
-			else
-				xPlayer.addInventoryItem('gazbottle', 1)
-				Harvest(source)
-			end
+                return
+            end
+ 
+            xPlayer.addInventoryItem('gazbottle', 1)
+            Harvest(source)
 		end
 
 	end)
@@ -46,10 +47,11 @@ local function Harvest2(source)
 
 			if FixToolQuantity >= 5 then
 				TriggerClientEvent('esx:showNotification', source, TranslateCap('you_do_not_room'))
-			else
-				xPlayer.addInventoryItem('fixtool', 1)
-				Harvest2(source)
-			end
+                return
+            end
+ 
+            xPlayer.addInventoryItem('fixtool', 1)
+            Harvest2(source)
 		end
 
 	end)
@@ -75,10 +77,11 @@ local function Harvest3(source)
 			local CaroToolQuantity = xPlayer.getInventoryItem('carotool').count
 			if CaroToolQuantity >= 5 then
 				TriggerClientEvent('esx:showNotification', source, TranslateCap('you_do_not_room'))
-			else
-				xPlayer.addInventoryItem('carotool', 1)
-				Harvest3(source)
-			end
+                return
+            end
+ 
+            xPlayer.addInventoryItem('carotool', 1)
+            Harvest3(source)
 		end
 
 	end)
@@ -105,11 +108,12 @@ local function Craft(source)
 
 			if GazBottleQuantity <= 0 then
 				TriggerClientEvent('esx:showNotification', source, TranslateCap('not_enough_gas_can'))
-			else
-				xPlayer.removeInventoryItem('gazbottle', 1)
-				xPlayer.addInventoryItem('blowpipe', 1)
-				Craft(source)
-			end
+                return
+            end
+
+            xPlayer.removeInventoryItem('gazbottle', 1)
+            xPlayer.addInventoryItem('blowpipe', 1)
+            Craft(source)
 		end
 
 	end)
@@ -137,11 +141,12 @@ local function Craft2(source)
 
 			if FixToolQuantity <= 0 then
 				TriggerClientEvent('esx:showNotification', source, TranslateCap('not_enough_repair_tools'))
-			else
-				xPlayer.removeInventoryItem('fixtool', 1)
-				xPlayer.addInventoryItem('fixkit', 1)
-				Craft2(source)
-			end
+                return
+            end
+            
+            xPlayer.removeInventoryItem('fixtool', 1)
+            xPlayer.addInventoryItem('fixkit', 1)
+            Craft2(source)
 		end
 
 	end)
@@ -152,7 +157,7 @@ AddEventHandler('esx_mechanicjob:startCraft2', function()
 	local source = source
 	local xPlayer = ESX.GetPlayerFromId(source)
 
-	if not xPlayer.job.name == 'mechanic' then
+	if xPlayer.job.name ~= 'mechanic' then
 		print(('[^3WARNING^7] Player ^1%s^7 is cheating (tried to trigger `esx_mechanicjob:startCraft2`)'):format(source))
 		return
 	end
@@ -170,20 +175,19 @@ end)
 
 local function Craft3(source)
 	SetTimeout(4000, function()
-
 		if PlayersCrafting3[source] == true then
 			local xPlayer = ESX.GetPlayerFromId(source)
 			local CaroToolQuantity = xPlayer.getInventoryItem('carotool').count
 
 			if CaroToolQuantity <= 0 then
 				TriggerClientEvent('esx:showNotification', source, TranslateCap('not_enough_body_tools'))
-			else
-				xPlayer.removeInventoryItem('carotool', 1)
-				xPlayer.addInventoryItem('carokit', 1)
-				Craft3(source)
-			end
+                return
+            end
+            
+            xPlayer.removeInventoryItem('carotool', 1)
+            xPlayer.addInventoryItem('carokit', 1)
+            Craft3(source)
 		end
-
 	end)
 end
 
@@ -191,7 +195,7 @@ RegisterNetEvent('esx_mechanicjob:startCraft3', function()
 	local source = source
 	local xPlayer = ESX.GetPlayerFromId(source)
 
-	if not xPlayer.job.name == 'mechanic' then
+	if xPlayer.job.name ~= 'mechanic' then
 		print(('[^3WARNING^7] Player ^1%s^7 is cheating (tried to trigger `esx_mechanicjob:startCraft3`)'):format(source))
 		return
 	end
@@ -212,7 +216,7 @@ RegisterNetEvent('esx_mechanicjob:onNPCJobMissionCompleted', function()
 	local xPlayer = ESX.GetPlayerFromId(source)
 	local total   = math.random(Config.NPCJobEarnings.min, Config.NPCJobEarnings.max);
 
-	if not xPlayer.job.name == 'mechanic' then
+	if xPlayer.job.name ~= 'mechanic' then
 		print(('[^3WARNING^7] Player ^1%s^7 is cheating (tried to trigger `esx_mechanicjob:onNPCJobMissionCompleted`)'):format(source))
 		return
 	end
@@ -261,7 +265,7 @@ end)
 RegisterNetEvent('esx_mechanicjob:getStockItem', function(itemName, count)
 	local xPlayer = ESX.GetPlayerFromId(source)
 	
-	if not xPlayer.job.name == 'mechanic' then
+	if xPlayer.job.name ~= 'mechanic' then
 		print(('[^3WARNING^7] Player ^1%s^7 is cheating (tried to trigger `esx_mechanicjob:getStockItem`)'):format(source))
 		return
 	end
@@ -269,20 +273,19 @@ RegisterNetEvent('esx_mechanicjob:getStockItem', function(itemName, count)
 	TriggerEvent('esx_addoninventory:getSharedInventory', 'society_mechanic', function(inventory)
 		local item = inventory.getItem(itemName)
 
-		-- is there enough in the society?
-		if count > 0 and item.count >= count then
+        if count < 0 and item.count <= count then
+            xPlayer.showNotification(TranslateCap('invalid_quantity'))
+            return
+        end
 
-			-- can the player carry the said amount of x item?
-			if xPlayer.canCarryItem(itemName, count) then
-				inventory.removeItem(itemName, count)
-				xPlayer.addInventoryItem(itemName, count)
-				xPlayer.showNotification(TranslateCap('have_withdrawn', count, item.label))
-			else
-				xPlayer.showNotification(TranslateCap('player_cannot_hold'))
-			end
-		else
-			xPlayer.showNotification(TranslateCap('invalid_quantity'))
-		end
+        if not xPlayer.canCarryItem(itemName, count) then
+            xPlayer.showNotification(TranslateCap('player_cannot_hold'))
+            return
+        end
+
+        inventory.removeItem(itemName, count)
+        xPlayer.addInventoryItem(itemName, count)
+        xPlayer.showNotification(TranslateCap('have_withdrawn', count, item.label))
 	end)
 end)
 
@@ -295,7 +298,7 @@ end)
 RegisterNetEvent('esx_mechanicjob:putStockItems', function(itemName, count)
 	local xPlayer = ESX.GetPlayerFromId(source)
 
-	if not xPlayer.job.name == 'mechanic' then
+	if xPlayer.job.name ~= 'mechanic' then
 		print(('[^3WARNING^7] Player ^1%s^7 is cheating (tried to trigger `esx_mechanicjob:putStockItems`)'):format(source))
 		return
 	end
@@ -303,13 +306,14 @@ RegisterNetEvent('esx_mechanicjob:putStockItems', function(itemName, count)
 	TriggerEvent('esx_addoninventory:getSharedInventory', 'society_mechanic', function(inventory)
 		local item = inventory.getItem(itemName)
 		local playerItemCount = xPlayer.getInventoryItem(itemName).count
-
-		if item.count >= 0 and count <= playerItemCount then
-			xPlayer.removeInventoryItem(itemName, count)
-			inventory.addItem(itemName, count)
-		else
-			xPlayer.showNotification(TranslateCap('invalid_quantity'))
-		end
+        
+        if item.count <= 0 and count >= playerItemCount then
+            xPlayer.showNotification(TranslateCap('invalid_quantity'))
+            return
+        end
+        
+        xPlayer.removeInventoryItem(itemName, count)
+        inventory.addItem(itemName, count)
 
 		xPlayer.showNotification(TranslateCap('have_deposited', count, item.label))
 	end)
